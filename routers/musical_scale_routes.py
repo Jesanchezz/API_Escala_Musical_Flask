@@ -12,16 +12,10 @@ MUSICAL_SCALE = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E','F','F#','G','G#']
 ms = MusicalScale()
 
 def request_note(musical_scale:List[str], key:str):
-    if key.islower():
-        key = key.upper()
+    return jsonify({
+        "index":musical_scale.index(key.upper()),
+        "key":key.upper()})
 
-    elif key not in musical_scale:
-        return jsonify({"msg":"No existe esa nota."}),404
-
-    index = musical_scale.index(key)
-
-    return jsonify({"index":index,
-            "key":key})
 
 @musical_scale_bp.route("/", methods = ["POST"])
 def create_scale_musical():
@@ -29,11 +23,15 @@ def create_scale_musical():
     
     schema = KeyModel()
 
+
     try:
         validated_key = schema.load(data)
-        print(validated_key)
+   
     except ValidationError as err:
-        return jsonify({"ERROR":err.messages}), 400
+        return jsonify({
+            "error": "Datos inválidos",
+            "details": err.messages
+        }), 400
     
     response_note = request_note(MUSICAL_SCALE, validated_key["key"])
 
